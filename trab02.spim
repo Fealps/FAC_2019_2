@@ -1,0 +1,82 @@
+.data
+str_erro_tam: .asciiz "Entradas invalidas.\n"
+str_erro_prim: .asciiz " O modulo nao eh primo.\n"
+str_msg_1: .asciiz "A exponencial modular "
+str_msg_2: .asciiz " elevado a "
+str_msg_3: .asciiz " (mod "
+str_msg_4: .asciiz ") eh "
+
+.text
+.globl main
+
+main:
+
+ler_inteiro:
+	li $v0, 5 # ler inteiro
+	syscall 
+	move $a3, $v0 #base
+	
+	li $v0, 5 # ler inteiro
+	syscall
+	move $a2, $v0 #expoente
+	
+	li $v0, 5 # ler inteiro
+	syscall
+	move $a1, $v0 #primo
+	
+	bge $a3, 65536,erro_tam #if(a3 >= 65536)
+	bge $a2, 65536,erro_tam #if(a2 >= 65536)
+	bge $a1, 65536,erro_tam #if(a1 >= 65536)
+	bltz $a3, erro_tam 	#if(a3 < 0)
+	bltz $a2, erro_tam	#if(a2 < 0)
+	bltz $a1, erro_tam	#if(a1 < 0)
+	
+	move $a0, $a1
+	
+	jal is_prime
+	#if(is_prime(a0))
+	
+	j calc_exp
+	
+
+erro_tam:
+	la $a0, str_erro_tam #print de error
+	li $v0, 4
+	syscall
+	j exit
+
+is_prime:
+	addi	$t0, $zero, 2				# int x = 2
+	
+is_prime_test:
+	slt	$t1, $t0, $a0				# if (x > num)
+	bne	$t1, $zero, is_prime_loop		
+	addi	$v0, $zero, 1				# eh primo
+	jr	$ra						# return 1
+
+is_prime_loop:						# else
+	div	$a0, $t0					
+	mfhi	$t3						# c = (num % x)
+	slti	$t4, $t3, 1				
+	beq	$t4, $zero, is_prime_loop_continue	# if (c == 0)
+	j erro_prime						#vai para erro primo
+
+is_prime_loop_continue:		
+	addi $t0, $t0, 1				# x++
+	j	is_prime_test				# continua o loop
+
+
+erro_prime:
+	la $a0, str_erro_prim #print de error
+	li $v0, 4
+	syscall
+	j exit
+
+calc_exp:
+	j imprime_saida
+
+imprime_saida:
+	j exit
+exit:
+	li $v0, 10
+	syscall
