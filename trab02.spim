@@ -5,6 +5,7 @@ str_msg_1: .asciiz "A exponencial modular "
 str_msg_2: .asciiz " elevado a "
 str_msg_3: .asciiz " (mod "
 str_msg_4: .asciiz ") eh "
+str_msg_5: .asciiz "."
 
 .text
 .globl main
@@ -14,26 +15,24 @@ main:
 ler_inteiro:
 	li $v0, 5 # ler inteiro
 	syscall 
-	move $a3, $v0 #base
+	move $s3, $v0 #base
 	
 	li $v0, 5 # ler inteiro
 	syscall
-	move $a2, $v0 #expoente
+	move $s2, $v0 #expoente
 	
 	li $v0, 5 # ler inteiro
 	syscall
-	move $a1, $v0 #primo
+	move $s1, $v0 #primo
 	
-	bge $a3, 65536,erro_tam #if(a3 >= 65536)
-	bge $a2, 65536,erro_tam #if(a2 >= 65536)
-	bge $a1, 65536,erro_tam #if(a1 >= 65536)
-	bltz $a3, erro_tam 	#if(a3 < 0)
-	bltz $a2, erro_tam	#if(a2 < 0)
-	bltz $a1, erro_tam	#if(a1 < 0)
+	bge $s3, 65536,erro_tam #if(a3 >= 65536)
+	bge $s2, 65536,erro_tam #if(a2 >= 65536)
+	bge $s1, 65536,erro_tam #if(a1 >= 65536)
+	bltz $s3, erro_tam 	#if(a3 < 0)
+	bltz $s2, erro_tam	#if(a2 < 0)
+	bltz $s1, erro_tam	#if(a1 < 0)
 	
-	move $a0, $a1
-	
-	jal is_prime
+	jal is_prime_test
 	#if(is_prime(a0))
 	
 	j calc_exp
@@ -73,9 +72,65 @@ erro_prime:
 	j exit
 
 calc_exp:
+	beq $s2, 0, exp_is_zero # if (exp = 0)
+	beq $s2, 1, imprime_saida # if (exp = 1)
+	addi $t0, $zero, 2 # temp = 2
+	div $s1, $t0 
+	mflo $t0 # temp = exp/2
+	sllv $s4, $s3, $t0 # shift à esquerda da base temp vezes
+	mfhi $t0 # temp = exp (mod 2) 
+	beq $t0, 1, exp_is_odd
 	j imprime_saida
 
+
+exp_is_zero:
+	addi $s4, $zero, 1 # base^0 = 1
+	j imprime_saida
+	
+exp_is_odd:
+	addu $s4, $s4, $s3 # base^par * base^1
+	j imprime_saida
+	
 imprime_saida:
+	div $t1, $a1
+	mfhi $t0 # temp = base (mod primo)
+	
+	la $a0, str_msg_1 # string de resultado
+	li $v0, 4
+	syscall
+		
+	move $a0, $s3  # print base
+	li $v0, 1
+	syscall
+		
+	la $a0, str_msg_2 # string de resultado
+	li $v0, 4
+	syscall
+	
+	move $a0, $s2 # print expoente
+	li $v0, 1
+	syscall
+	
+	la $a0, str_msg_3 # string de resultado
+	li $v0, 4
+	syscall
+	
+	move $a0, $s1  # print primo
+	li $v0, 1
+	syscall
+	 
+	la $a0, str_msg_4 # string de resultado
+	li $v0, 4
+	syscall
+	
+	move $a0, $s4 # print resultado
+	li $v0, 1
+	syscall
+	
+	la $a0, str_msg_5 # string de resultado
+	li $v0, 4
+	syscall
+	
 	j exit
 exit:
 	li $v0, 10
