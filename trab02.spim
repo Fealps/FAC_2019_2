@@ -43,24 +43,27 @@ erro_tam:
 	
 eh_primo:
 	addu $t0, $zero, 1
-	beq $s1, $t0, erro_prime # 1 nao eh primo
+	beq  $s1, $t0, erro_prime # 1 nao eh primo
 	addu $t0, $t0, 2 # $t0 = 3
-	ble $s1, $t0, calc_exp # se primo eh 2 ou 3 eh primo
+	ble  $s1, $t0, calc_exp # se primo eh 2 ou 3 eh primo
 	subu $t0, $t0, 1 # $t0 = 2
 	divu $s1, $t0 # dividir primo por 2
 	mfhi $t0 # $t0 = resto da divisao
-	beqz $t0, erro_prime # se resto 0, eh par, logo não eh primo
-	addu $t1, $zero, 3 # primeiro impar depois de 2
+	beqz $t0, erro_prime # se resto 0, eh par, logo nao eh primo
+	addu $t1, $zero, 1 # primeiro impar depois de 2
+	addu $t4, $zero, 256 # limite superior para teste de primo
 	j eh_primo_impar
 	
 	
 eh_primo_impar:
+	addu $t1, $t1, 2 # $t1 = proximo impar
+	beq  $t1, $s1, eh_primo_impar
 	divu $s1, $t1 # dividir primo por prox impar
 	mfhi $t2 # resto da divisao
+	
 	beqz $t2, erro_prime # se resto 0, nao eh primo pois e divisivel por um impar
-	addu $t1, $t1, 2 # $t1 = proximo impar
-	addu $t4, $zero, 255 # limite superior para teste de primo
-	bge $t4, $t1, calc_exp
+	bge  $t1, $t4, calc_exp
+	
 	j eh_primo_impar
 
 
