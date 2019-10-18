@@ -1,6 +1,6 @@
 .data
-str_erro_tam: .asciiz "Entradas invalidas.\n"
-str_erro_prim: .asciiz " O modulo nao eh primo.\n"
+str_erro_tam: .asciiz "Entradas invalidas."
+str_erro_prim: .asciiz "O modulo nao eh primo."
 str_msg_1: .asciiz "A exponencial modular "
 str_msg_2: .asciiz " elevado a "
 str_msg_3: .asciiz " (mod "
@@ -32,11 +32,8 @@ ler_inteiro:
 	blez $s2, erro_tam	#if(a2 < 0)
 	blez $s1, erro_tam	#if(a1 < 0)
 
-	addi	$t0, $zero, 2				# int x = 2
-	jal eh_primo_test
-	#if(is_prime(a0))
-	
-	j calc_exp
+	addi $t0, $zero, 2				# int x = 2
+	jal eh_primo
 	
 
 erro_tam:
@@ -44,23 +41,25 @@ erro_tam:
 	li $v0, 4
 	syscall
 	j exit
-
-eh_primo_test:
-	slt	$t1, $t0, $s1				# if (x > num)
-	bne	$t1, $zero, eh_primo_loop		
-	addi	$v0, $zero, 1				# eh primo
-	jr	$ra						# return 1
-
-eh_primo_loop:						# else
-	div	$s1, $t0					
-	mfhi	$t3						# c = (num % x)
-	slti	$t4, $t3, 1				
-	beq	$t4, $zero, eh_primo_loop_continue	# if (c == 0)
-	j erro_prime						#vai para erro primo
-
-eh_primo_loop_continue:		
-	addi $t0, $t0, 1				# x++
-	j	eh_primo_test				# continua o loop
+	
+	
+eh_primo:
+	addu $t0, $zero, 2 # $t0 = 2
+	div $s1, $t0 # dividir primo por 2
+	mfhi $t0 # $t0 = resto da divisao
+	beqz $t0, erro_prime # se resto 0, eh par, logo não eh primo
+	addu $t1, $zero, 3 # primeiro impar depois de 2
+	j eh_primo_impar
+	
+	
+eh_primo_impar:
+	div $s1, $t1 # dividir primo por prox impar
+	mfhi $t2 # resto da divisao
+	beqz $t2, erro_prime # se resto 0, nao eh primo pois e divisivel por um impar
+	addu $t1, $t1, 2 # $t1 = proximo impar
+	addu $t4, $zero, 255 # limite superior para teste de primo
+	bge $t4, $t1, calc_exp
+	j eh_primo_impar
 
 
 erro_prime:
@@ -69,29 +68,38 @@ erro_prime:
 	syscall
 	j exit
 
+
 calc_exp:
 	beq $s2, 1, exp_eh_um # if (exp = 1)
-	addi $t0, $zero, 2 # temp = 2
-	div $s2, $t0 # exp/2
-	mflo $t0 # temp = exp/2
 	addu $s4, $zero, $s3 # resultado = base
-	mfhi $t0 # quociente = exp (mod 2) = multiplos de 2 no exponente
-	mfhi $t1 # resto = exp (mod 2)  
-	j exp_eh_par
+	addu $t0, $zero, $s2 # temp = exponente
+	clz $t1, $t0 # $t1 = numero de zeros antes do primeiro bit significativo em $t0
+	addi $t2, $zero, 32 # $t2 = numero de bits numa word
+	subu $t2, $t2, $t1 # $t2 = 32 - $t1
+	subu $t2, $t2, 1 # ignorar primeiro bit significativo para square multiply
+	j square_multiply
 	
-
-exp_eh_par:
-	mult $s4, $s4 # base^2
-	mflo $s4 # resultado = base^2
-	subu $t0, $t0, 1 # quociente--
-	bgtz $t0, exp_eh_par # while(quociente > 0)
-	beq $t1, 1, exp_eh_impar # se resto = 1 exponente eh impar
-	j imprime_saida
-
-exp_eh_impar:
-	mult $s4, $s3 # resultado = resultado * base^1
-	mflo $s4
-	j imprime_saida
+square_multiply:
+	addu $t3, $t0, $zero # $t3 = exponente
+	srlv $t3, $t3, $t2 # pegar bit n# $t2 de exponente
+	beqz $t3, bit_eh_zero # se $t3 = 0, square and multiply
+	j bit_eh_um # se $t3 = 1, square
+	
+bit_eh_um:
+	mult $s4, $s4 # resultado^2
+	mflo $s4 # $s4 = resultado^2
+	mult $s4, $s3 # resultado * base
+	mflo $s4 # $s4 = resultado * base
+	subu $t2, $t2, 1 # exponente--
+	beqz $t2, imprime_saida # se exponente = 0
+	j square_multiply
+	
+bit_eh_zero:
+	mult $s4, $s4 # resultado^2
+	mflo $s4 # $s4 = resultado^2
+	subu $t2, $t2, 1 # exponente--
+	beqz $t2, imprime_saida # se exponente = 0
+	j square_multiply
 	
 exp_eh_um:
 	addu $s4, $zero, $s3 # resultado = base^1 = base
