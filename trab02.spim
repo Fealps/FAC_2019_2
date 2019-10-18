@@ -96,6 +96,8 @@ square_multiply:
 bit_eh_um:
 	multu $s4, $s4 # resultado^2
 	mflo $s4 # $s4 = resultado^2
+	divu $s4, $s1 # base / primo
+	mfhi $s4 # resultado = base (mod primo)
 	multu $s4, $s3 # resultado * base
 	mflo $s4 # $s4 = resultado * base
 	divu $s4, $s1 # base / primo
