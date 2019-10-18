@@ -1,11 +1,11 @@
 .data
-str_erro_tam: .asciiz "Entradas invalidas."
-str_erro_prim: .asciiz "O modulo nao eh primo."
+str_erro_tam: .asciiz "Entradas invalidas.\n"
+str_erro_prim: .asciiz "O modulo nao eh primo.\n"
 str_msg_1: .asciiz "A exponencial modular "
 str_msg_2: .asciiz " elevado a "
 str_msg_3: .asciiz " (mod "
 str_msg_4: .asciiz ") eh "
-str_msg_5: .asciiz "."
+str_msg_5: .asciiz ".\n"
 
 .text
 .globl main
@@ -90,6 +90,8 @@ bit_eh_um:
 	mflo $s4 # $s4 = resultado^2
 	mult $s4, $s3 # resultado * base
 	mflo $s4 # $s4 = resultado * base
+	div $s4, $s1 # base / primo
+	mfhi $s4 # resultado = base (mod primo)
 	subu $t2, $t2, 1 # exponente--
 	beqz $t2, imprime_saida # se exponente = 0
 	j square_multiply
@@ -97,6 +99,8 @@ bit_eh_um:
 bit_eh_zero:
 	mult $s4, $s4 # resultado^2
 	mflo $s4 # $s4 = resultado^2
+	div $s4, $s1 # base / primo
+	mfhi $s4 # resultado = base (mod primo)
 	subu $t2, $t2, 1 # exponente--
 	beqz $t2, imprime_saida # se exponente = 0
 	j square_multiply
@@ -106,9 +110,6 @@ exp_eh_um:
 	j imprime_saida
 	
 imprime_saida:
-	div $s4, $s1 # base / primo
-	mfhi $s4 # resultado = base (mod primo)
-	
 	la $a0, str_msg_1 # string de resultado
 	li $v0, 4
 	syscall
