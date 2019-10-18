@@ -43,8 +43,9 @@ erro_tam:
 	
 	
 eh_primo:
-	addu $t0, $zero, 2 # $t0 = 2
-	ble $s1, $t0, calc_exp # se primo eh 1 ou 2 eh primo
+	addu $t0, $zero, 3 # $t0 = 3
+	ble $s1, $t0, calc_exp # se primo eh 1, 2 ou 3 eh primo
+	subu $t0, $t0, 1 # $t0 = 2
 	div $s1, $t0 # dividir primo por 2
 	mfhi $t0 # $t0 = resto da divisao
 	beqz $t0, erro_prime # se resto 0, eh par, logo não eh primo
