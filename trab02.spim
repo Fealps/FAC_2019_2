@@ -11,8 +11,6 @@ str_msg_5: .asciiz ".\n"
 .globl main
 
 main:
-
-ler_inteiro:
 	li $v0, 5 # ler inteiro
 	syscall 
 	move $s3, $v0 #base
@@ -77,7 +75,7 @@ calc_exp:
 	addu $s4, $zero, $s3 # resultado = base
 	addu $t0, $zero, $s2 # temp = exponente
 	clz $t1, $t0 # $t1 = numero de zeros antes do primeiro bit significativo em $t0
-	addi $t2, $zero, 32 # $t2 = numero de bits numa word
+	addiu $t2, $zero, 32 # $t2 = numero de bits numa word
 	subu $t2, $t2, $t1 # $t2 = 32 - $t1
 	subu $t2, $t2, 1 # ignorar primeiro bit significativo para square multiply
 	j square_multiply
