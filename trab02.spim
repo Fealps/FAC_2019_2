@@ -28,11 +28,12 @@ ler_inteiro:
 	bge $s3, 65536,erro_tam #if(a3 >= 65536)
 	bge $s2, 65536,erro_tam #if(a2 >= 65536)
 	bge $s1, 65536,erro_tam #if(a1 >= 65536)
-	bltz $s3, erro_tam 	#if(a3 < 0)
-	bltz $s2, erro_tam	#if(a2 < 0)
-	bltz $s1, erro_tam	#if(a1 < 0)
-	
-	jal is_prime_test
+	blez $s3, erro_tam 	#if(a3 < 0)
+	blez $s2, erro_tam	#if(a2 < 0)
+	blez $s1, erro_tam	#if(a1 < 0)
+
+	addi	$t0, $zero, 2				# int x = 2
+	jal eh_primo_test
 	#if(is_prime(a0))
 	
 	j calc_exp
@@ -44,25 +45,22 @@ erro_tam:
 	syscall
 	j exit
 
-is_prime:
-	addi	$t0, $zero, 2				# int x = 2
-	
-is_prime_test:
-	slt	$t1, $t0, $a0				# if (x > num)
-	bne	$t1, $zero, is_prime_loop		
+eh_primo_test:
+	slt	$t1, $t0, $s1				# if (x > num)
+	bne	$t1, $zero, eh_primo_loop		
 	addi	$v0, $zero, 1				# eh primo
 	jr	$ra						# return 1
 
-is_prime_loop:						# else
-	div	$a0, $t0					
+eh_primo_loop:						# else
+	div	$s1, $t0					
 	mfhi	$t3						# c = (num % x)
 	slti	$t4, $t3, 1				
-	beq	$t4, $zero, is_prime_loop_continue	# if (c == 0)
+	beq	$t4, $zero, eh_primo_loop_continue	# if (c == 0)
 	j erro_prime						#vai para erro primo
 
-is_prime_loop_continue:		
+eh_primo_loop_continue:		
 	addi $t0, $t0, 1				# x++
-	j	is_prime_test				# continua o loop
+	j	eh_primo_test				# continua o loop
 
 
 erro_prime:
@@ -72,28 +70,35 @@ erro_prime:
 	j exit
 
 calc_exp:
-	beq $s2, 0, exp_is_zero # if (exp = 0)
-	beq $s2, 1, imprime_saida # if (exp = 1)
+	beq $s2, 1, exp_eh_um # if (exp = 1)
 	addi $t0, $zero, 2 # temp = 2
-	div $s1, $t0 
+	div $s2, $t0 # exp/2
 	mflo $t0 # temp = exp/2
-	sllv $s4, $s3, $t0 # shift à esquerda da base temp vezes
-	mfhi $t0 # temp = exp (mod 2) 
-	beq $t0, 1, exp_is_odd
+	addu $s4, $zero, $s3 # resultado = base
+	mfhi $t0 # quociente = exp (mod 2) = multiplos de 2 no exponente
+	mfhi $t1 # resto = exp (mod 2)  
+	j exp_eh_par
+	
+
+exp_eh_par:
+	mult $s4, $s4 # base^2
+	mflo $s4 # resultado = base^2
+	subu $t0, $t0, 1 # quociente--
+	bgtz $t0, exp_eh_par # while(quociente > 0)
+	beq $t1, 1, exp_eh_impar # se resto = 1 exponente eh impar
 	j imprime_saida
 
-
-exp_is_zero:
-	addi $s4, $zero, 1 # base^0 = 1
+exp_eh_impar:
+	addu $s4, $s4, $s3 # resultado = resultado * base^1
 	j imprime_saida
 	
-exp_is_odd:
-	addu $s4, $s4, $s3 # base^par * base^1
+exp_eh_um:
+	addu $s4, $zero, $s3 # resultado = base^1 = base
 	j imprime_saida
 	
 imprime_saida:
-	div $t1, $a1
-	mfhi $t0 # temp = base (mod primo)
+	div $s4, $s1 # base / primo
+	mfhi $s4 # resultado = base (mod primo)
 	
 	la $a0, str_msg_1 # string de resultado
 	li $v0, 4
