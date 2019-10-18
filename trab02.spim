@@ -89,7 +89,8 @@ exp_eh_par:
 	j imprime_saida
 
 exp_eh_impar:
-	addu $s4, $s4, $s3 # resultado = resultado * base^1
+	mult $s4, $s3 # resultado = resultado * base^1
+	mflo $s4
 	j imprime_saida
 	
 exp_eh_um:
