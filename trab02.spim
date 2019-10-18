@@ -11,6 +11,7 @@ str_msg_5: .asciiz ".\n"
 .globl main
 
 main:
+	li $t8, -1
 	li $v0, 5 # ler inteiro
 	syscall 
 	move $s3, $v0 #base
@@ -18,7 +19,7 @@ main:
 	li $v0, 5 # ler inteiro
 	syscall
 	move $s2, $v0 #expoente
-	
+		
 	li $v0, 5 # ler inteiro
 	syscall
 	move $s1, $v0 #primo
@@ -72,16 +73,22 @@ erro_prime:
 
 calc_exp:
 	beq $s2, 1, exp_eh_um # if (exp = 1)
-	addu $s4, $zero, $s3 # resultado = base
+	li $s4, 1 # resultado = base
 	addu $t0, $zero, $s2 # temp = exponente
 	clz $t1, $t0 # $t1 = numero de zeros antes do primeiro bit significativo em $t0
 	addiu $t2, $zero, 32 # $t2 = numero de bits numa word
 	subu $t2, $t2, $t1 # $t2 = 32 - $t1
 	subu $t2, $t2, 1 # ignorar primeiro bit significativo para square multiply
+	
+	li $t9, 1
+	sllv $t9, $t9, $t2
 	j square_multiply
+	
 	
 square_multiply:
 	addu $t3, $t0, $zero # $t3 = exponente
+	and $t3, $t3, $t9
+	srl $t9, $t9, 1 
 	srlv $t3, $t3, $t2 # pegar bit n# $t2 de exponente
 	beqz $t3, bit_eh_zero # se $t3 = 0, square and multiply
 	j bit_eh_um # se $t3 = 1, square
@@ -94,7 +101,7 @@ bit_eh_um:
 	divu $s4, $s1 # base / primo
 	mfhi $s4 # resultado = base (mod primo)
 	subu $t2, $t2, 1 # exponente--
-	beqz $t2, imprime_saida # se exponente = 0
+	beq $t2, $t8, imprime_saida # se exponente = 0
 	j square_multiply
 	
 bit_eh_zero:
@@ -103,7 +110,7 @@ bit_eh_zero:
 	divu $s4, $s1 # base / primo
 	mfhi $s4 # resultado = base (mod primo)
 	subu $t2, $t2, 1 # exponente--
-	beqz $t2, imprime_saida # se exponente = 0
+	beq $t2, $t8, imprime_saida # se exponente = 0
 	j square_multiply
 	
 exp_eh_um:
