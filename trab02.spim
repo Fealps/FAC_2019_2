@@ -32,7 +32,6 @@ ler_inteiro:
 	blez $s2, erro_tam	#if(a2 < 0)
 	blez $s1, erro_tam	#if(a1 < 0)
 
-	addi $t0, $zero, 2				# int x = 2
 	jal eh_primo
 	
 
@@ -45,6 +44,7 @@ erro_tam:
 	
 eh_primo:
 	addu $t0, $zero, 2 # $t0 = 2
+	ble $s1, $t0, calc_exp # se primo eh 1 ou 2 eh primo
 	div $s1, $t0 # dividir primo por 2
 	mfhi $t0 # $t0 = resto da divisao
 	beqz $t0, erro_prime # se resto 0, eh par, logo não eh primo
@@ -107,6 +107,8 @@ bit_eh_zero:
 	
 exp_eh_um:
 	addu $s4, $zero, $s3 # resultado = base^1 = base
+	div $s4, $s1 # base / primo
+	mfhi $s4 # resultado = base (mod primo)
 	j imprime_saida
 	
 imprime_saida:
