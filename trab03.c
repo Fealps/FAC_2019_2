@@ -1,20 +1,31 @@
-#include <bits/stdc++.h>
-
-using namespace std;
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 int main(){
     int x, e ,i;
-    float aux, y;
+    float aux, y, parada = 1.0;
     double a0,a,b0,b;
-    scanf("%d", x);
-    scanf("%d", e);
+    scanf("%d", &x);
+    scanf("%d", &e);
+    
+    for(int j = 0; j < e; j++){
+        parada /= 10;
+    }
 
     if( x < 1 || e > 16 || e < 1 ){
         printf("Entradas Invalidas\n");
     }
+    int cont = 1;
+    b0 = 1;
+    while(b0*b0<=x){
+        a0 = b0;
+        cont ++;
+        b0 = cont;
 
-    a0 = 0;
-    b0 = x+0.1;
+
+    }
+
     for(i = 1; i <= 100; i++){
         a = (a0 + b0)/2;
         b = x/a;
@@ -23,8 +34,9 @@ int main(){
         a0 = a;
         
         aux = a-b;
-        aux<0? aux = aux*-1 : aux = aux;
-        if(aux <= pow(10,-e) ){
+        aux = (aux<0)? aux*-1 : aux;
+        if(aux <= parada ){
+            printf("teste");
             break;
         } 
     }
