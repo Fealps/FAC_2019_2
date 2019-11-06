@@ -1,0 +1,130 @@
+.data
+	str_erro_tam: .asciiz "Entradas invalidas.\n"
+	str_erro_iter: .asciiz "Nao foi possivel calcular sqrt("
+	str_erro_iter2: .asciiz ").\n"
+	str_result: .asciiz "A raiz quadrada de "
+	str_result2: .asciiz " eh "
+	str_result3: .asciiz ", calculada em "
+	str_result4: .asciiz " iteracoes.\n"
+	dez_float: .float 10.0
+	dois_float: .float 2.0
+	um_float: .float 1.0
+	max_iter: .word 100
+	
+.text
+.globl main
+
+main:
+	li $t8, -1
+	li $v0, 5 # ler inteiro
+	syscall 
+	move $s4, $v0 # $s0 = x = numero a ser tirada raiz
+	
+	li $v0, 5 # ler inteiro
+	syscall
+	move $s5, $v0 # $s1 = e = precisão do resultado desejada (10^-e)
+	
+	ble $s4 1, erro_tam # if x < 1 goto erro_tam
+	blez $s5, erro_tam # if e < 0 goto erro_tam
+	bgt $s5, 16, erro_tam # if e > 16 goto erro_tam
+	
+	lwc1 $f0, um_float # p = float valor 1
+	lwc1 $f2, dez_float # float valor 10 
+	addiu $s3, $zero, 1 # $s3 = a0 = 1
+	addiu $s2, $zero, 1 # $s2 = cont = 1
+	
+calc_precisao:
+	ble $s2, $s5, calc_precisao_loop # if (cont < e)
+	j encontra_inteiros
+	
+calc_precisao_loop:
+	div.s $f0, $f0, $f2 # p = p / 10 
+	addiu $s2, $s2, 1 # cont++
+	j calc_precisao
+	
+encontra_inteiros:
+	multu $s3, $s3 # b0^2
+	mflo $t0 # b = b0^2
+	bge $t0, $s4, encontrou # if(a0 >= x)
+	addu $s2, $s3, $zero  # a0 = b0
+	addiu $s3, $s3, 1 # b0++
+	j encontra_inteiros
+	
+encontrou:
+	mtc1 $s2, $f2 # a1 = a0 = $f2 (movendo para coproc1)
+	cvt.s.w  $f2, $f2 # convertendo a1 para float (converter word para float)
+	mtc1 $s4, $f4 # x = $f4 convertendo x para float (movendo para coproc1)
+	cvt.s.w $f4, $f4 # convertendo x para float (converter word para float)
+	div.s $f6, $f4, $f2 # b1 = x / a1 
+	addiu $s0, $zero, 1 # cont = 1
+	lw $s1, max_iter # max de iteracoes para raiz
+	j calc_raiz
+	
+calc_raiz:
+	add.s $f2, $f2, $f6 # $f2 = ai = a(i-1) + b(i-1)
+	lwc1 $f10, dois_float # $f10 = 2.0 (float)
+	div.s $f2, $f2, $f10 # $f2 = ai = ai / 2 
+	div.s $f6, $f4, $f2 # $f6 = bi = x / ai
+	addi $s0, $s0, 1 # cont++
+	j calc_raiz_loop
+	
+calc_raiz_loop:
+	sub.s $f8, $f6, $f2 # $f8 = |ai - bi|
+	bge $s0, $s1, erro_iter # if ( cont >= 100) goto erro_iter
+	c.lt.s $f0, $f8 # if ( |ai - bi| > p) flag = true
+	bc1t calc_raiz # if flag = true goto calc_raiz
+	j imprime_saida # goto imprime_saida
+	
+erro_tam:
+	la $a0, str_erro_tam # print de error
+	li $v0, 4
+	syscall
+	j exit 
+	
+erro_iter:
+	la $a0, str_erro_iter # print de error
+	li $v0, 4
+	syscall
+	
+	move $a0, $s4
+	li $v0, 1 # print x
+	syscall
+	
+	la $a0, str_erro_iter2 # print de error 2
+	li $v0, 4
+	syscall
+	j exit
+
+imprime_saida:
+	la $a0, str_result # print de saida
+	li $v0, 4
+	syscall
+	
+	move $a0, $s4
+	li $v0, 1 # print x
+	syscall
+	
+	la $a0, str_result2 # print de saida
+	li $v0, 4
+	syscall
+	
+	mov.s $f12, $f2  # carregar float 
+	li $v0, 2
+	syscall
+	
+	la $a0, str_result3 # print de saida
+	li $v0, 4
+	syscall
+	
+	move $a0, $s0 # print cont
+	li $v0, 1 
+	
+	la $a0, str_result4 # print de saida
+	li $v0, 4
+	syscall
+	j exit
+	
+exit:
+	li $v0, 10
+	syscall
+	
