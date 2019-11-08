@@ -19,11 +19,15 @@ int main(){
     }
 
     b0 = 1;    
-    while(b0*b0 < x){
-        a0 = b0;
+    while(b0*b0 < x){     
+	a0 = b0;
         b0 ++;
+
     }
 
+	b0 = (b0*b0 == x)? b0+1 : b0;
+	printf("%f", b0);
+	printf("%f", a0);
     for(i = 1; i <= 100; i++){
         a = (a0 + b0)/2;
         b = x/a;
