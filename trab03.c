@@ -9,19 +9,19 @@ int main(){
     scanf("%d", &x);
     scanf("%d", &e);
     
+    if( x <= 1 || e > 16 || e < 1 ){
+        printf("Entradas Invalidas\n");
+	return 0;
+    }
+
     for(int j = 0; j < e; j++){
         parada /= 10;
     }
 
-    if( x < 1 || e > 16 || e < 1 ){
-        printf("Entradas Invalidas\n");
-    }
-    int cont = 1;
-    b0 = 1;
+    b0 = 1;    
     while(b0*b0<=x){
         a0 = b0;
-        cont ++;
-        b0 = cont;
+        b0 ++;
 
 
     }
@@ -34,6 +34,7 @@ int main(){
         a0 = a;
         
         aux = a-b;
+	printf("%f\n", aux);
         aux = (aux<0)? aux*-1 : aux;
         if(aux <= parada ){
             printf("teste");
