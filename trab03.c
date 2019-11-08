@@ -19,11 +19,9 @@ int main(){
     }
 
     b0 = 1;    
-    while(b0*b0<=x){
+    while(b0*b0 < x){
         a0 = b0;
         b0 ++;
-
-
     }
 
     for(i = 1; i <= 100; i++){
@@ -34,10 +32,8 @@ int main(){
         a0 = a;
         
         aux = a-b;
-	printf("%f\n", aux);
         aux = (aux<0)? aux*-1 : aux;
         if(aux <= parada ){
-            printf("teste");
             break;
         } 
     }
@@ -46,7 +42,7 @@ int main(){
         printf("Nao foi possivel calcular sqrt(%d).\n", x);
     }else{
         y = a;
-        printf("A raiz quadrada de %d eh %f, calculada em %d iteracoes.\n", x,y,i);
+        printf("A raiz quadrada de %d eh %.16f, calculada em %d iteracoes.\n", x,y,i);
     }
     
 
